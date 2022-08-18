@@ -69,7 +69,7 @@ class VehicleNumDoors(models.Model):
     num_doors = models.IntegerField(verbose_name='Number Of Doors')
 
     def __str__(self):
-        return self.num_doors
+        return str(self.num_doors)
 
 
 class VehicleBodyColor(models.Model):
