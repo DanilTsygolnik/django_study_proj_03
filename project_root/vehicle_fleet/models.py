@@ -41,7 +41,7 @@ class VehicleEngineCapacity(models.Model):
     )
 
     def __str__(self):
-        return self.engine_capacity_liters
+        return str(self.engine_capacity_liters)
 
 
 class VehicleTransmission(models.Model):
