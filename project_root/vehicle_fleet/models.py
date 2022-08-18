@@ -32,3 +32,14 @@ class VehicleFuel(models.Model):
     def __str__(self):
         return self.title
 
+
+class VehicleEngineCapacity(models.Model):
+    engine_capacity_liters = models.DecimalField(
+        max_digits=4,
+        decimal_places=2,
+        verbose_name='Engine Capacity (liters)'
+    )
+
+    def __str__(self):
+        return self.engine_capacity_liters
+
