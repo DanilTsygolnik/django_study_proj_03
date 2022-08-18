@@ -147,5 +147,5 @@ class Vehicle(models.Model):
     )
 
     def __str__(self):
-        return self.model_in_brand
+        return self.model_in_brand.title
 
