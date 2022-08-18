@@ -18,3 +18,10 @@ class VehicleModelInBrand(models.Model):
     def __str__(self):
         return self.title
 
+
+class VehicleCategory(models.Model):
+    title = models.CharField(max_length=20, verbose_name='Category')
+
+    def __str__(self):
+        return self.title
+
