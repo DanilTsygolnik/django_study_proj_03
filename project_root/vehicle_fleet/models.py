@@ -57,3 +57,10 @@ class VehicleTypeOfDrive(models.Model):
     def __str__(self):
         return self.title
 
+
+class VehicleNumSeats(models.Model):
+    num_seats = models.IntegerField(verbose_name='Number Of Seats')
+
+    def __str__(self):
+        return self.num_seats
+
