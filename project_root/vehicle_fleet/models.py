@@ -64,3 +64,10 @@ class VehicleNumSeats(models.Model):
     def __str__(self):
         return self.num_seats
 
+
+class VehicleNumDoors(models.Model):
+    num_doors = models.IntegerField(verbose_name='Number Of Doors')
+
+    def __str__(self):
+        return self.num_doors
+
