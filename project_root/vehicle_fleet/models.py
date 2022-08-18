@@ -25,3 +25,10 @@ class VehicleCategory(models.Model):
     def __str__(self):
         return self.title
 
+
+class VehicleFuel(models.Model):
+    title = models.CharField(max_length=20, verbose_name='Fuel Type')
+
+    def __str__(self):
+        return self.title
+
