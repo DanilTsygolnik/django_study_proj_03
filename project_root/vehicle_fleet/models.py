@@ -43,3 +43,10 @@ class VehicleEngineCapacity(models.Model):
     def __str__(self):
         return self.engine_capacity_liters
 
+
+class VehicleTransmission(models.Model):
+    title = models.CharField(max_length=20, verbose_name='Transmission Type')
+
+    def __str__(self):
+        return self.title
+
