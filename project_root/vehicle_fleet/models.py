@@ -71,3 +71,10 @@ class VehicleNumDoors(models.Model):
     def __str__(self):
         return self.num_doors
 
+
+class VehicleBodyColor(models.Model):
+    title = models.CharField(max_length=20, verbose_name='Vehicle Body Color')
+
+    def __str__(self):
+        return self.title
+
