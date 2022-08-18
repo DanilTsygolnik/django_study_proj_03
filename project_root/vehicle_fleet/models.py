@@ -50,3 +50,10 @@ class VehicleTransmission(models.Model):
     def __str__(self):
         return self.title
 
+
+class VehicleTypeOfDrive(models.Model):
+    title = models.CharField(max_length=20, verbose_name='Type Of Drive')
+
+    def __str__(self):
+        return self.title
+
