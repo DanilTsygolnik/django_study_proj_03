@@ -13,6 +13,7 @@ class VehicleAdmin(admin.ModelAdmin):
         'fuel',
         'price_usd'
     )
+    list_display_links = ('id', 'model_in_brand')
 
 
 admin.site.register(VehicleBrand)
