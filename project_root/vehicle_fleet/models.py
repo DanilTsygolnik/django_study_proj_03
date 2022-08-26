@@ -1,6 +1,29 @@
 from django.db import models
 
 
+class Driver(models.Model):
+    first_name = models.CharField(
+        max_length=50,
+        verbose_name='First Name'
+    )
+    last_name = models.CharField(
+        max_length=50,
+        verbose_name='Last Name'
+    )
+    num_years_experience = models.IntegerField(
+        blank=True,
+        null=True,
+        verbose_name='Years Of Experience'
+    )
+    employer = models.ForeignKey(
+        'Enterprise', 
+        blank=True,
+        null = True,
+        on_delete=models.SET_NULL
+    )
+    is_driving = models.BooleanField(verbose_name='Is Driving')
+
+
 class Enterprise(models.Model):
     title = models.CharField(
         max_length=50,
