@@ -16,5 +16,6 @@ class VehicleAdmin(admin.ModelAdmin):
     list_display_links = ('id',)
 
 
+admin.site.register(Enterprise)
 admin.site.register(VehicleBrand)
 admin.site.register(Vehicle, VehicleAdmin)
