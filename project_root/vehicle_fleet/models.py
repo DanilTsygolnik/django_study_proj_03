@@ -59,4 +59,10 @@ class Vehicle(models.Model):
         null=True,
         verbose_name='Vehicle Description'
     )
+    owner = models.ForeignKey(
+        Enterprise, 
+        blank=True,
+        on_delete=models.SET_NULL,
+        null=True
+    )
 
