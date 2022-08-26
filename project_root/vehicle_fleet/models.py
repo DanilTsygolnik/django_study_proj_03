@@ -1,6 +1,16 @@
 from django.db import models
 
 
+class Enterprise(models.Model):
+    title = models.CharField(
+        max_length=50,
+        verbose_name='Company Name'
+    )
+
+    def __str__(self):
+        return self.title
+
+
 class VehicleBrand(models.Model):
     title = models.CharField(max_length=20, verbose_name='Vehicle Brand')
 
