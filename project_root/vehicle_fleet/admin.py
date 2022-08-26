@@ -1,6 +1,16 @@
 from django.contrib import admin
 from .models import *
 
+class DriverAdmin(admin.ModelAdmin):
+    list_display = (
+    'id',
+    'first_name',
+    'last_name',
+    'num_years_experience',
+    'employer',
+    'is_driving'
+    )
+
 
 class VehicleAdmin(admin.ModelAdmin):
     list_display = (
@@ -16,6 +26,7 @@ class VehicleAdmin(admin.ModelAdmin):
     list_display_links = ('id',)
 
 
+admin.site.register(Driver, DriverAdmin)
 admin.site.register(Enterprise)
 admin.site.register(VehicleBrand)
 admin.site.register(Vehicle, VehicleAdmin)
