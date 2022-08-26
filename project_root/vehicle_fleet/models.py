@@ -22,7 +22,10 @@ class Driver(models.Model):
         on_delete=models.SET_NULL
     )
     is_driving = models.BooleanField(verbose_name='Is Driving')
-    assigned_vehicles = models.ManyToManyField('Vehicle')
+    assigned_vehicles = models.ManyToManyField(
+        'Vehicle',
+        blank=True,
+    )
 
 
 class Enterprise(models.Model):
