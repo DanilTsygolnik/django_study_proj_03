@@ -5,25 +5,16 @@ from .models import *
 class VehicleAdmin(admin.ModelAdmin):
     list_display = (
         'id',
-        'model_in_brand',
-        'category',
+        'brand',
+        'model',
+        'license_plate_num',
+        'vehicle_type',
         'year_of_manufacture',
         'mileage_km',
-        'transmission',
-        'fuel',
-        'price_usd'
+        'price_usd',
     )
-    list_display_links = ('id', 'model_in_brand')
+    list_display_links = ('id',)
 
 
 admin.site.register(VehicleBrand)
-admin.site.register(VehicleModelInBrand)
-admin.site.register(VehicleCategory)
-admin.site.register(VehicleFuel)
-admin.site.register(VehicleEngineCapacity)
-admin.site.register(VehicleTransmission)
-admin.site.register(VehicleTypeOfDrive)
-admin.site.register(VehicleNumSeats)
-admin.site.register(VehicleNumDoors)
-admin.site.register(VehicleBodyColor)
 admin.site.register(Vehicle, VehicleAdmin)
