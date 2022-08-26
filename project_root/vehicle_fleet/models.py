@@ -93,3 +93,15 @@ class Vehicle(models.Model):
         null=True
     )
 
+    @property
+    def human_readable_title(self):
+        title = " ".join([
+            self.brand.title,
+            self.model,
+            f'({self.license_plate_num})'
+        ])
+        return title
+
+    def __str__(self):
+        return self.human_readable_title
+
