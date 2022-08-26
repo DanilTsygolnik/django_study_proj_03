@@ -225,13 +225,13 @@ Vehicle (транспортное средство), поля:
 </details>
 
 
-<details>
 <summary><h2>Этап 3</h2></summary>
 
-### Задача
+<details>
+<summary><h3>Задача</h3></summary>
 
 Добавить ещё две базовые модели:
-1. Enterprise (предприятие)
+    1. Enterprise (предприятие)
 2. Driver (водитель)
 
     Основные поля этим моделям придумать самостоятельно. Например, название + город, имя + зарплата.
@@ -248,3 +248,194 @@ Vehicle (транспортное средство), поля:
     - Автомобиль может переназначаться в админке другому предприятию, только если для него не назначен водитель (с галкой).
 
 </details>
+
+
+<details>
+<summary><h4>Упростить модель Vehicle</h4></summary>
+
+Убрал лишнее из Vehicle ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/ef178c81e3ac9f28f42f4a08d8acf93fe2a6a700)) и `admin.py` ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/ca824aa2833e62840db72eb25024d31cc55dfd8a)).
+
+<details>
+<summary>Result</summary>
+<img src="img/fe82c9b.png" alt="">
+</details>
+
+Команда `python manage.py makemigrations` с имеющейся БД выдаёт следующее сообщение:
+```
+It is impossible to add a non-nullable field 'license_plate_num' to vehicle without specifying a default. This is because the database needs something to populate existing rows.
+Please select a fix:
+1) Provide a one-off default now (will be set on all existing rows with a null value for this column)
+2) Quit and manually define a default value in models.py.
+Select an option: _
+```
+
+Сношу БД, повторяю -- тот же результат. Сношу файлы миграций, создаю новые ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/88c9ca1783c3cca581546df37e0dfba20a8c968a)), снова создаю суперпользователя -- есть пустая БД. Добавляю пару моделей, чтобы проверить результат.
+
+<details>
+<summary>Result</summary>
+<img src="img/88c9ca1.png" alt="">
+</details>
+
+</details>
+
+
+<summary><h4>Работа по этапу 3</h4></summary>
+
+
++ создать модель предприятия
+    + добавить модель
+    + зарегистрировать модель в админке
+    + связать Vehicle с Enterprise через FK (у одной машины м.б. только одно предприятие) -- поле owner
++ создать модель водителя
+    + добавить модель 
+    + зарегистрировать модель в админке
+    + связать Driver  с Enterprise через FK (у одного водителя м.б. только одно предприятие) -- поле `employer`
++ добавить 2 предприятия в БД
++ добавить 3-х водителей (1 активный, 1 свободный, 1 без привязки к тачкам)
+
+
+58 минут
+
+----------------------------------------------------------------
+
+
+
++ связать Driver с Vehicle через FK (M:M) -- `assigned_vehicles`
+
+<details>
+<summary>Error</summary>
+<img src="img/c95a54b.png" alt="">
+</details>
+
+Создаю и применяю миграции
+```bash
+$ python manage.py makemigrations
+# Migrations for 'vehicle_fleet':
+#   vehicle_fleet/migrations/0003_driver_assigned_vehicles.py
+#     - Add field assigned_vehicles to driver
+$ python manage.py migrate
+# Operations to perform:
+#   Apply all migrations: admin, auth, contenttypes, sessions, vehicle_fleet
+# Running migrations:
+#   Applying vehicle_fleet.0003_driver_assigned_vehicles... OK
+```
+В результате в форме редактирования модели Driver появляется список, в котором доступен множественный выбор элементов:
+
+<details>
+<summary>Result</summary>
+<img src="img/0246b83.png" alt="">
+</details>
+
+Проблема: поле для М:М валидируется, как обязательное ([fix commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/5c3f70e8bf2b5ba7654ba81e57000de1c32a8503)).
+<details>
+<summary>Issue</summary>
+<img src="img/m-to-m-field-blank-true-issue.png" alt="">
+</details>
+
+[Подсказка](https://stackoverflow.com/a/2529875):
+> If you want to be able to specify ManyToMany relation without making it required just use `blank=True`
+
+`null=True` добавлять не нужно, т.к. при М:М этот параметр не имеет влияния:
+```
+WARNINGS:
+vehicle_fleet.Driver.assigned_vehicles: (fields.W340) null has no effect on ManyToManyField.
+```
+
+В форме Vehicle не видно назначенных водителей, но но через shell всё работает:
+
+Назначена машина
+driver1_assigned_vehicles.png
+```python
+>>> from vehicle_fleet.models import Driver, Vehicle
+>>> Vehicle.objects.get(pk=1).driver_set.all()
+### <QuerySet [<Driver: Driver object (1)>]>
+>>> Driver.objects.get(pk=1).assigned_vehicles.all()
+### <QuerySet [<Vehicle: Vehicle object (1)>]>
+```
+Снимаем назначение в админке из под Driver
+driver1_no_assigned_vehicles.png
+```python
+>>> Vehicle.objects.get(pk=1).driver_set.all()
+### <QuerySet []>
+>>> Driver.objects.get(pk=1).assigned_vehicles.all()
+### <QuerySet []>
+```
+
+Время 1:38
+
+----------------------------------------------------------------
+
+Улучшил отображение Vehicle ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/e025115a0af32c32a0e2917fef9d224736265289)).  [^show-a-field-from-a-foreign-model]
+
+<details>
+<summary>Result</summary>
+<img src="img/e025115.png" alt="">
+</details>
+
+
+Проблема: водителю назначено несколько тачек. Если задать `is_driving=True`, то непонятно, на какой из машин он едет - косяк.
+
+Переделываю в точности по ТЗ, связываю Driver:Vehicle как M:1 ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/95e9ee1d02d4a624eec69701fd26cc8c52b5fad8)).
+
+Создаю ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/ebd87e115d066e4316dcd3e123dcc1af4707fe37)) и применяю миграции, ОК:
+
+<details>
+<summary>Result</summary>
+<img src="img/a4abd41.png" alt="">
+</details>
+
+
+
+[Following relationships “backward”](https://docs.djangoproject.com/en/3.0/topics/db/queries/#following-relationships-backward): модель Driver хранит FK на Vehicle. Возьмём для примера `bmw` (объект Vehicle), тогда список водителей `bmw` получим как объект `bmw.driver_set.all()`, где `driver_set` - дефолтное обращение к модели `Driver` (lowercase). Дефолтное значение можно переписать с помощью атрибута `related_name`, например:
+```python
+class Article:
+    blog = ForeignKey(Blog, on_delete=models.CASCADE, related_name='articles')
+    #...
+```
+
+Таким образом, можно определить, занята ли сейчас конкретная машина:
+```python
+>>> from vehicle_fleet.models import Driver, Vehicle
+# Проверяем BMW
+>>> bmw = Vehicle.objects.get(pk=1)
+>>> bmw_drivers = bmw.driver_set.all()
+# Фильтруем по полю is_driving. Машина занята.
+>>> bmw_drivers.filter(is_driving=True)
+### <QuerySet [<Driver: Driver object (1)>]>
+>>> john = Driver.objects.get(pk=1)
+# Снимаем водителя с BMW
+>>> john.is_driving = False
+>>> john.save()
+# Активных водителей нет
+>>> bmw_drivers.filter(is_driving=True)
+### <QuerySet []>
+```
+
+Заготовка под валидатор:
+```python
+vehicle_obj
+vehicle_is_busy = (len(vehicle_obj.driver_set.filter(is_driving=True)) != 0)
+if vehicle_is_busy:
+    raise ValidationError('...')
+
+```
+
+Машину нельзя переписать на другое предприятие, если `vehicle_is_busy`.
+
+Другого водителя данной машины нельзя назначить на неё, пока работает другой (ОДИН из водителей считается активным).
+
+
+время 2:44
+
+----------------------------------------------------------------
+
+
+
+- добавить валидацию поля `owner` у Vehicle
+    - написать кастомную форму для модели Vehicle
+        - добавить `owner` в вывод админки для Vehicle
+    - добавить валидацию соотв. поля
+
+
+
+[^show-a-field-from-a-foreign-model]: https://www.dothedev.com/blog/2019/10/12/django-admin-show-custom-field-list_display/
