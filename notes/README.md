@@ -431,6 +431,63 @@ if vehicle_is_busy:
 
 
 
+> Fields are single data points, forms are a collection of fields.
+
+Предполагаю, что вариант с `clean_owner_id` не сработал, т.к. это перегрузка валидации отдельного поля, а мне нужен `clean()`
+
+При работе с `clean_owner_id` через обращение к `self` происходит доступ только к значению данного поля (?). Мне же нужен доступ к значениям нескольких полей: `id`, `owner_id`.
+
+
+Время 2:53 до коммита ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/5237a275b1e8162e1f762b8dee456a3f94197f90))
+
+----------------------------------------------------------------
+
+Форма подключается - проверил с помощью `fields` и `excludes` в `VehicleAdminForm.Meta`
+
+Проблема в валидаторе...
+
+```python
+# Никаких изменений
+def clean_owner_id(self):
+    raise ValidationError()
+```
+
+Прочитал [пост](https://stackoverflow.com/a/1872108) и [доки](https://docs.djangoproject.com/en/4.1/ref/forms/validation/#cleaning-and-validating-fields-that-depend-on-each-other), попробовал добавить перед `clean_owner_id` следующее:
+```python
+def clean(self):
+    raise ValidationError('Test error')
+```
+на странице появилось соответствующее предупреждение.
+
+Переписал валидатор ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/1af9df5e10888bb73cb94437eebb030f6177580d)), упёрся в проблему: в форме присутствуют всё поля, кроме id редактируемой машины. Из-за этого `vehicle_id` отсаётся None, что приводит к ошибке - невозможно обратиться из кода к модели Vehicle для дальнейших операций.
+
+<details>
+<summary>Result</summary>
+<img src="img/1af9df5.png" alt="">
+</details>
+
+Использованные материалы:
+* [Form and field validation | Django documentation](https://docs.djangoproject.com/en/dev/ref/forms/validation/#cleaning-a-specific-field-attribute)
+* [Understand clean() and clean_<fieldname>() in Django](https://sayari3.com/articles/12-understand-clean-and-clean_fieldname-in-django/)
+
+Время 2 часа
+
+----------------------------------------------------------------
+
+[Research](forms_validation_research.md)
+
+Доки:
+* [Models | Django documentation | Django](https://docs.djangoproject.com/en/4.1/topics/db/models/ "Models | Django documentation | Django")
+* [Forms | Django documentation | Django](https://docs.djangoproject.com/en/4.1/ref/forms/ "Forms | Django documentation | Django")
+* [Form and field validation | Django documentation | Django](https://docs.djangoproject.com/en/4.1/ref/forms/validation/#using-validation-in-practice "Form and field validation | Django documentation | Django")
+* [Creating forms from models | Django documentation | Django](https://docs.djangoproject.com/en/4.1/topics/forms/modelforms/ "Creating forms from models | Django documentation | Django")
+* [Validators | Django documentation | Django](https://docs.djangoproject.com/en/4.1/ref/validators/ "Validators | Django documentation | Django")
+
+
+Время 2:17
+
+---
+
 - добавить валидацию поля `owner` у Vehicle
     - написать кастомную форму для модели Vehicle
         - добавить `owner` в вывод админки для Vehicle

@@ -63,24 +63,26 @@ class VehicleAdminForm(forms.ModelForm):
     class Meta:
         model = Vehicle
 
-    def clean_third_party_id(self):
-        # отображение Enterprise.title
-
-
-        cleaned_data = self.cleaned_data
-        third_party_id = cleaned_data['third_party_id']
-        id = cleaned_data['id']
-        obj = Product.objects.get(id=id)
-        if obj.third_party_id != third_party_id:
+    def clean_owner(self):
+        """
+        Используюем именно clean_<field_name>, т.к. валидация тригерится
+        сменой значения в выпадающем списке, который получается на основе
+        модели. Невалидных данных тут не будет.
+        """
+        field_id = 'owner'
+        value_form_cleaned = self.cleaned_data[field_id]
+        value_database = self.__dict__[field_id]
+        user_changed_field = (value_form_cleaned != value_database)
+        num_vehicle_active_drivers = len(self.driver_set.filter(is_driving=True)
+        vehicle_is_busy = (num_vehicle_active_drivers != 0)
+        if user_changed_field and vehicle_is_busy:
             raise ValidationError(
-                _(
-                    "You cannot change the owner until the vehicle is busy.\n \
-                    Change 'is_driving' field for the driver %(driver_id)s \
-                    first."
-                ),
+                _("You cannot change the owner if the vehicle is busy.\n \
+                  Change 'is_driving' field for the driver %(driver_id)s \
+                  first."),
                 code='changing_vehicle_owner_while_busy',
-                params={'driver_id': ?? },
-         return third_party_id
+                params={'driver_id': 'driver_id_placeholder'},
+         return value_form_cleaned
 
 
 class ProductAdmin(admin.Admin):
@@ -117,6 +119,10 @@ By default a ModelForm is dynamically created for your model. It is used to crea
     
 For an example see the section <a href="https://docs.djangoproject.com/en/4.1/ref/contrib/admin/#admin-custom-validation">Adding custom validation to the admin</a>.
 </quoteblock>
+
+----
+
+[Автокомплит и кастомные списки для полей формы](https://stackoverflow.com/a/53833726) -- `queryset`
 
 
 
