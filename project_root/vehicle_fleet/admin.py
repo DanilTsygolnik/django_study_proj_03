@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import *
+from .forms import VehicleAdminForm
 
 class DriverAdmin(admin.ModelAdmin):
     list_display = (
@@ -13,6 +14,7 @@ class DriverAdmin(admin.ModelAdmin):
 
 
 class VehicleAdmin(admin.ModelAdmin):
+    form = VehicleAdminForm
     list_display = (
         'id',
         'brand',
