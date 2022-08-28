@@ -14,18 +14,18 @@ class VehicleAdminForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.vehicle_id = kwargs['instance'].id
+        self.vehicle = kwargs['instance']
         super(VehicleAdminForm, self).__init__(*args,**kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
-        vehicle_owner_id_new = cleaned_data.get('owner').__dict__['id']
-        vehicle_obj = Vehicle.objects.get(id=self.vehicle_id)
-        vehicle_owner_id_old = vehicle_obj.owner.__dict__['id']
-        user_changed_owner = (vehicle_owner_id_old != vehicle_owner_id_new)
-        vehicle_drivers = vehicle_obj.driver_set
+        vehicle_owner_new = cleaned_data.get('owner')
+        vehicle_owner_old = self.vehicle.owner
+        user_changed_owner = (vehicle_owner_new.id != vehicle_owner_old.id)
+        vehicle_drivers = self.vehicle.driver_set
         num_active_drivers = len(vehicle_drivers.filter(is_driving=True))
         vehicle_is_busy = (num_active_drivers != 0)
+        import pdb; pdb.set_trace()
         if user_changed_owner and vehicle_is_busy:
             raise ValidationError(
                 _("You cannot change the owner if the vehicle is busy.\n \
