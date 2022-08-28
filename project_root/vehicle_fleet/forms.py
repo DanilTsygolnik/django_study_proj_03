@@ -9,6 +9,10 @@ class VehicleAdminForm(forms.ModelForm):
         model = Vehicle
         fields = '__all__'
 
+    def __init__(self, *args, **kwargs):
+        self.vehicle_id = kwargs['id']
+        super(VehicleAdminForm, self).__init__(self, *args,**kwargs)
+
     def clean(self):
         cleaned_data = super().clean()
         owner_field_id = 'owner_id'
