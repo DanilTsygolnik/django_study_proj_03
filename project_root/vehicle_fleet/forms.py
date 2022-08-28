@@ -26,6 +26,8 @@ class VehicleAdminForm(forms.ModelForm):
         num_active_drivers = len(vehicle_drivers.filter(is_driving=True))
         vehicle_is_busy = (num_active_drivers != 0)
         if user_changed_owner and vehicle_is_busy:
+            self.data = self.data.copy()
+            self.data['owner'] = vehicle_owner_old
             raise ValidationError(
                 _("You cannot change the owner if the vehicle is busy.\n \
                   Change 'is_driving' field for the driver %(driver_id)s \
