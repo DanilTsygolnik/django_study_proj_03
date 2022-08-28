@@ -31,9 +31,9 @@ class VehicleAdminForm(forms.ModelForm):
             self.data = self.data.copy()
             self.data['owner'] = vehicle_owner_old
             raise ValidationError(
-                _("You cannot change the owner if the vehicle is busy.\n \
-                  Change 'is_driving' field for the driver %(driver_id)s \
-                  first."),
+                _("If you want to change the owner, unset active driver first. \
+                    Currently active driver: %(driver)s"
+                ),
                 code='changing_vehicle_owner_while_busy',
-                params={'driver_id': 'driver_id_placeholder'},
+                params={'driver': active_driver},
             )
