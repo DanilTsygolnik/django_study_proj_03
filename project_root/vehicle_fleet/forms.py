@@ -30,6 +30,11 @@ class VehicleAdminForm(forms.ModelForm):
         if user_changed_owner and vehicle_is_busy:
             self.data = self.data.copy()
             self.data['owner'] = vehicle_owner_old
+            self.add_error(
+                'owner',
+                "This is the current owner. You can't change him now. \
+                Please, press 'Save'."
+            )
             raise ValidationError(
                 _("If you want to change the owner, unset active driver first. \
                     Currently active driver: %(driver)s"
