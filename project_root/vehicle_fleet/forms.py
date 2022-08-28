@@ -25,7 +25,6 @@ class VehicleAdminForm(forms.ModelForm):
         vehicle_drivers = self.vehicle.driver_set
         num_active_drivers = len(vehicle_drivers.filter(is_driving=True))
         vehicle_is_busy = (num_active_drivers != 0)
-        import pdb; pdb.set_trace()
         if user_changed_owner and vehicle_is_busy:
             raise ValidationError(
                 _("You cannot change the owner if the vehicle is busy.\n \
