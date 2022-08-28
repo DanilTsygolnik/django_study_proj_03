@@ -17,8 +17,7 @@ class VehicleAdminForm(forms.ModelForm):
         cleaned_data = super().clean()
         owner_field_id = 'owner_id'
         vehicle_owner_id_new = cleaned_data.get(owner_field_id)
-        vehicle_id = cleaned_data.get('id')
-        vehicle_obj = Vehicle.objects.get(id=vehicle_id)
+        vehicle_obj = Vehicle.objects.get(id=self.vehicle_id)
         vehicle_owner_id_old = vehicle_obj.__dict__[owner_field_id]
         user_changed_owner = (vehicle_owner_id_old != vehicle_owner_id_new)
         vehicle_drivers = vehicle_obj.driver_set
