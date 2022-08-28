@@ -9,6 +9,9 @@ class VehicleAdminForm(forms.ModelForm):
     class Meta:
         model = Vehicle
         fields = '__all__'
+        widgets = {
+            'description': forms.Textarea(attrs={'cols': 60, 'rows': 1}),
+        }
 
     def __init__(self, *args, **kwargs):
         self.vehicle_id = kwargs['instance'].id
