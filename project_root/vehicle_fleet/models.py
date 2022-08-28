@@ -29,6 +29,18 @@ class Driver(models.Model):
         on_delete=models.SET_NULL
     )
 
+    @property
+    def human_readable_title(self):
+        title = " ".join([
+            self.first_name,
+            self.last_name,
+            f'(ID: {self.id})'
+        ])
+        return title
+
+    def __str__(self):
+        return self.human_readable_title
+
 
 class Enterprise(models.Model):
     title = models.CharField(
