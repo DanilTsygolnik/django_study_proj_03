@@ -11,7 +11,7 @@ class VehicleAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         self.vehicle_id = kwargs['instance'].id
-        super(VehicleAdminForm, self).__init__(self, *args,**kwargs)
+        super(VehicleAdminForm, self).__init__(*args,**kwargs)
 
     def clean(self):
         cleaned_data = super().clean()
