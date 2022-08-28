@@ -2,7 +2,7 @@ from django import forms
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 
-from .models import Vehicle
+from .models import Vehicle, Driver
 
 
 class VehicleAdminForm(forms.ModelForm):
@@ -22,9 +22,11 @@ class VehicleAdminForm(forms.ModelForm):
         vehicle_owner_new = cleaned_data.get('owner')
         vehicle_owner_old = self.vehicle.owner
         user_changed_owner = (vehicle_owner_new.id != vehicle_owner_old.id)
-        vehicle_drivers = self.vehicle.driver_set
-        num_active_drivers = len(vehicle_drivers.filter(is_driving=True))
-        vehicle_is_busy = (num_active_drivers != 0)
+        try:
+            active_driver = self.vehicle.driver_set.get(is_driving=True)
+            vehicle_is_busy = True
+        except Driver.DoesNotExist:
+            vehicle_is_busy = False
         if user_changed_owner and vehicle_is_busy:
             self.data = self.data.copy()
             self.data['owner'] = vehicle_owner_old
