@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
 class Manager(AbstractUser):
@@ -12,6 +12,10 @@ class Manager(AbstractUser):
 
     def __str__(self):
         return self.username
+
+
+class ManagerManager(BaseUserManager):
+    pass
 
 
 class Driver(models.Model):
