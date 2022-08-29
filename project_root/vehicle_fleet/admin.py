@@ -1,6 +1,14 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
+
 from .models import *
 from .forms import VehicleAdminForm
+
+
+class ManagerAdmin(UserAdmin):
+    model = Manager
+    list_display = [field.name for field in Manager._meta.get_fields()]
+
 
 class DriverAdmin(admin.ModelAdmin):
     list_display = (
@@ -28,6 +36,7 @@ class VehicleAdmin(admin.ModelAdmin):
     list_display_links = ('id',)
 
 
+admin.site.register(Manager, ManagerAdmin)
 admin.site.register(Driver, DriverAdmin)
 admin.site.register(Enterprise)
 admin.site.register(VehicleBrand)
