@@ -3,7 +3,12 @@ from django.contrib.auth.models import AbstractUser
 
 
 class Manager(AbstractUser):
-    pass # For now we do nothinng
+    managed_enterprises = models.ManyToManyField(
+        'Enterprise',
+        related_name='managers',
+        blank=True,
+        verbose_name='Managed Enterprises'
+    )
 
     def __str__(self):
         return self.username
