@@ -20,84 +20,12 @@ class VehicleForm(forms.Form):
     vehicle_color = forms.ChoiceField(choices=VEHICLE_COLOR_CHOICES)
 ```
 
-
-
-Что хочу видеть в админке по модели Vehicle
-название в формате "Brand Model license-plate-number"
-пробег
-компания-владелец
-свободна (поле из админки, динамически на основе активного водилы)
-
-
-## Меняем владельца тачки только если она неактивна
-
-Идея:
-- добавить в форму админки для модели Vehicle поле "Is busy": true - у машины есть водитель со статусом `is_driving=True`, false - в противном случае.  [^django-model-custom-fields-for-the-admin]
-- в поле "Vehicle owner" (`Vehicle.owner` в модели) можно выбирать компанию (связанная модель Enterprise). Добавить кастомную валидацию этого поля:
-    - при сохранении на экран выводится сообщение "Нельзя переназначить предприятие - Vehicle is busy. Нужно изменить статус `is_driving` у водителя X"
-    - значение сбрасывалется до уже имеющегося в модели
-
-
-Кастомный валидатор с сообщением:
-```python
-class Vehicle(models.Model):
-    owner = models.ForeignKey(Enterprise, on_delete=models.SET_NULL)
-
-    def clean(self):
-        vehicle_is_busy = 
-        self.owner
-        if vehicle_is_busy:
-            raise ValidationError(
-                "Нельзя переназначить предприятие - Vehicle is busy. \
-                Нужно изменить статус `is_driving` у водителя X"
-            )
-```
-
-Кастомный валидатор со сбросом значения поля owner:   [^django-admin-make-field-editable-on-condition]
-```python
-# admin.py
-# define your own form for the admin
-# custom validate 'owner' field, rejecting if it is already set
-
-class VehicleAdminForm(forms.ModelForm):
-    class Meta:
-        model = Vehicle
-
-    def clean_owner(self):
-        """
-        Используюем именно clean_<field_name>, т.к. валидация тригерится
-        сменой значения в выпадающем списке, который получается на основе
-        модели. Невалидных данных тут не будет.
-        """
-        field_id = 'owner'
-        value_form_cleaned = self.cleaned_data[field_id]
-        value_database = self.__dict__[field_id]
-        user_changed_field = (value_form_cleaned != value_database)
-        num_vehicle_active_drivers = len(self.driver_set.filter(is_driving=True)
-        vehicle_is_busy = (num_vehicle_active_drivers != 0)
-        if user_changed_field and vehicle_is_busy:
-            raise ValidationError(
-                _("You cannot change the owner if the vehicle is busy.\n \
-                  Change 'is_driving' field for the driver %(driver_id)s \
-                  first."),
-                code='changing_vehicle_owner_while_busy',
-                params={'driver_id': 'driver_id_placeholder'},
-         return value_form_cleaned
-
-
-class ProductAdmin(admin.Admin):
-    form = [ProductAdminForm,]
-```
-
-
 ## tbs
-
 
 [How to show many to many or reverse FK fields on listview page?](https://books.agiliq.com/projects/django-admin-cookbook/en/latest/many_to_many.html). 
 
 
 ### Editable model fields in the admin on condition
-
 
 - [python - how to show a django ModelForm field as uneditable - Stack Overflow](https://stackoverflow.com/questions/7088321/how-to-show-a-django-modelform-field-as-uneditable "python - how to show a django ModelForm field as uneditable - Stack Overflow")
 - [python - conditional editing in django model - Stack Overflow](https://stackoverflow.com/questions/61039438/conditional-editing-in-django-model "python - conditional editing in django model - Stack Overflow")
@@ -133,7 +61,4 @@ For an example see the section <a href="https://docs.djangoproject.com/en/4.1/re
   - widget -- https://stackoverflow.com/a/15347196
   - add custom field example -- https://stackoverflow.com/a/29057206
 [^set-form-widget-initial-value]: https://stackoverflow.com/a/604325
-[^django-model-custom-fields-for-the-admin]: resourses
-  - [example 1](https://stackoverflow.com/a/9166179) 
 [^django-admin-make-field-editable-on-condition]: https://stackoverflow.com/a/7860791
-

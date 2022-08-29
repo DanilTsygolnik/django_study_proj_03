@@ -1,3 +1,51 @@
+# UPD: solution
+
+Перегрузка метода:
+<blockquote>
+
+You need to define an `__init__` method for your class which should accept your product id as an argument:
+```python
+def __init__(self,*args,**kwargs):
+    self.product_id = kwargs.pop('product_id')
+    super(OrderForm,self).__init__(*args,**kwargs)
+```
+
+-- [How to request object.id in form clean data funtion][1]
+
+[1]: https://stackoverflow.com/a/41082785
+
+</blockquote>
+
+Как передать `self.vehicle_id` дополнительным параметром в форму, чтобы обращаться к нему из `clean()` через `self.vehicle_id`:
+<blockquote>
+
+You need to pass it in from the view when you instantiate the form. The usual pattern is like this:
+
+```python
+class EntryForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        self.identifier = kwargs.pop('identifier', None)
+        super(EntryForm, self).__init__(*args, **kwargs)
+
+    def clean(self):
+        try:
+            Entry.objects.get(
+                identifier=self.identifier...
+```
+
+-- [How to pass data to clean method in Django][1]
+
+[1]: https://stackoverflow.com/a/19144599
+
+</blockquote>
+
+Что ещё посмотрел, пока искал:
+* [python - What to put inside __init__ method in django form class? - Stack Overflow](https://stackoverflow.com/questions/18147541/what-to-put-inside-init-method-in-django-form-class "python - What to put inside __init__ method in django form class? - Stack Overflow")
+* [python - Django Queryset in ModelForm using a 'pk' - Stack Overflow](https://stackoverflow.com/questions/50691066/django-queryset-in-modelform-using-a-pk "python - Django Queryset in ModelForm using a 'pk' - Stack Overflow")
+* [python - Django: Overriding __init__ for Custom Forms - Stack Overflow](https://stackoverflow.com/questions/871037/django-overriding-init-for-custom-forms "python - Django: Overriding __init__ for Custom Forms - Stack Overflow")
+
+# Ideation
+
 ## Первая догадка (скорее всего, не то)
 
 Нужно как-то передавать значение PK редактируемой машины в словарь значений ([dictionary mapping field names to initial values](https://stackoverflow.com/a/51463822)):

@@ -483,15 +483,144 @@ def clean(self):
 * [Creating forms from models | Django documentation | Django](https://docs.djangoproject.com/en/4.1/topics/forms/modelforms/ "Creating forms from models | Django documentation | Django")
 * [Validators | Django documentation | Django](https://docs.djangoproject.com/en/4.1/ref/validators/ "Validators | Django documentation | Django")
 
+Файлы Django
+- ?? `venv/lib/python3.10/site-packages/django/forms/models.py`
 
 Время 2:17
 
----
+----------------------------------------------------------------
 
-- добавить валидацию поля `owner` у Vehicle
-    - написать кастомную форму для модели Vehicle
-        - добавить `owner` в вывод админки для Vehicle
-    - добавить валидацию соотв. поля
+При редактировании отдельной машины попадаем на страницу формы -- `forms.ModelForm` (VehicleAdminForm)
+Метод `clean()`:
+- self - это что за объект ?? (значение `<VehicleForm bound=True, valid=True, fields=(brand;model;license_plate_num;vehicle_type;year_of_manufacture;mileage_km;price_usd;description;owner)>`)
+- `cleaned_data` -- словарь `{'field_name':'field_value'}`, здесь как раз нет PK записи (vehicle), поля которой редактируем
+
+
+Написал по [совету](https://stackoverflow.com/a/19144599) ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/22e8bfd0da03ac237435a4582ca97b7ea81d8f98)), получил ошибку KeyError по `id`:
+
+<details>
+<summary>Result</summary>
+<img src="img/22e8bfd.png" alt="">
+</details>
+
+Предположение: в словаре `kwargs`, судя по сообщению, нет ключа `id`, но видим `instance`, за которым числится нужная запись vehicle. Мне нужно перегрузить метод так, чтобы при создании формы (`self`, к которому обращаемся из `clean(self)`) создавался параметр, к которому можно обратиться из `clean()` через `self.vehicle_id`.
+
+Пробую пофиксить ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/52389249f88c71b1ab836e956bea27b83c2b34b6)) KeyError, появилась ошибка TypeError, но видно, что нужный PK удалось извлечь (в kwargs появилась пара `'vehicle_id' : PK`):
+
+<details>
+<summary>Result</summary>
+<img src="img/5238924.png" alt="">
+</details>
+
+Пробую пофиксить TypeError ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/b75beb0fa0bc29de17815a4902a798cfb3325308)), появилась ошибка AttributeError: 
+
+<details>
+<summary>Result</summary>
+<img src="img/b75beb0.png" alt="">
+</details>
+
+Исправляю AttributeError ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/23170ea7751b26581b7f36c9e49036995178cfaf)), возвращаюсь к ошибке в валидаторе (см. [commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/1af9df5e10888bb73cb94437eebb030f6177580d) ранее):
+
+<details>
+<summary>Result</summary>
+<img src="img/1af9df5.png" alt="">
+</details>
+
+Вношу правку ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/5243a4d2f53ba452f059dd4d33e8c6be8c2c18a6)) точно по примеру 
+```python
+def __init__(self,*args,**kwargs):
+    self.product_id = kwargs.pop('product_id')
+    super(OrderForm,self).__init__(*args,**kwargs)
+```
+из [совета](https://stackoverflow.com/a/41082785). Теперь валидатор отрабатывает (видно по значениям переменных), но есть ошибка в коде в блоке `ValidationError`:
+
+<details>
+<summary>Result</summary>
+<img src="img/5243a4d.png" alt="">
+</details>
+
+Блок `ValidationError` писал в соответствии с рекомендациями из доков Django. Ошибку исправил ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/d3779c57673e44207114d49440d5207534c7f86a)), зарегистрировав `_` ([подсказка](https://stackoverflow.com/a/67507104)).
+
+Теперь валидатор отрабатывает, но есть проблема: ошибка появляется, даже если владельца vehicle не изменял.
+
+<details>
+<summary>Result</summary>
+<img src="img/d3779c5.png" alt="">
+</details>
+
+Уменьшил высоту поля Description для удобства просмотра ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/13b082bae3b9860a281b4fb426a78d917f236720)). [Подсказка](https://docs.djangoproject.com/en/4.1/topics/forms/modelforms/#overriding-the-default-fields) из доков.
+
+<details>
+<summary>Result</summary>
+<img src="img/13b082b.png" alt="">
+</details>
+
+Время 3:10
+
+----------------------------------------------------------------
+
+Добавил строку `import pdb; pdb.set_trace()` перед проверкой условия, в выводе `locals()` видим следующее:
+```
+'owner': <Enterprise: Abibas>}
+'vehicle_owner_id_new': None,
+'vehicle_owner_id_old': 2,
+```
+Значение owner остаётся неизменным, даже если выбрать другую компанию. Значение `vehicle_owner_id_new` вообще не обновляется. Исправляю ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/a79f9899088f6037ff8a35e8938e9701b1076ae1)).
+
+Замечаю другую проблему: различаются значения `vehicle_owner_id_old` и `vehicle_owner_id_new`. Благодаря валидации по условия `vehicle_is_busy` старое значение должно быть также равно 2.
+```
+'owner': <Enterprise: Abibas>},
+'vehicle_owner_id_new': 2, 
+'vehicle_obj': <Vehicle: BMW M3 (Е102СН102)>,
+'vehicle_owner_id_old': 1
+```
+
+Нахожу ошибку в коде: `vehicle_owner_id_old = vehicle_obj.__dict__['id']` -- вместо `owner_id` записывается `vehicle_id`. Исправляю этот момент ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/9c9e5b8e96a456d2b735f409f7ee66bfce990c21)).
+
+Теперь при смене компании появляется ошибка валидации, однако при сохранении с прежним значением появляется AttributeError - метод `clean()` возвращает не то, что нужно. Исправил ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/123770a78f81a7d15cdc12671902780b666c1618)), теперь валидация работает, как нужно.
+
+
+Время 1:13
+
+----------------------------------------------------------------
+
+Упростить код валидатора ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/fb0cb7bda223cf952aeb57695b420737e4bb8155)) -- 15 минут.
+
+----------------------------------------------------------------
+
+Когда срабатывает валидатор, автоматически сбрасывать владельца до исходного ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/e2fabaff162c94833ba72fa54a1cbd088a799e47)). Помогла [подсказка](https://stackoverflow.com/a/53925191) -- 32 минуты.
+
+----------------------------------------------------------------
+
+Улучшить валидатор:
+1. Если машина занята, получать доступ к конкретному объекту-водителю (try-except) ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/1fecf5575daa7d13ca74135bcf0dcfdd8c6f1c1c)). Пригодилась [подсказка](https://stackoverflow.com/a/16181252).
+2. Заменить сообщение валидатора на более понятное, с отсылкой на активного водителя ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/47144b922eb00ecd2b611ffcf1ddd485e0b272e5)).
+3. Добавить доп. сообщение на полем Owner ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/a52e372ec1d89e84eff13fe9c2052cddc23722d0)). Помогла [подсказка](https://python.tutorialink.com/django-get-previous-value-in-clean-method/). 
+
+<details>
+<summary>Result</summary>
+<img src="img/a52e372.png" alt="">
+</details>
+
+
+Добавить human-readable описание объектов класса Driver ([commit](https://github.com/DanilTsygolnik/django_study_proj_03/commit/c767c4eafb18531add448ffbdef96e79987bcd80)).
+
+Теперь понятно, какого именно водителя проверять.
+
+<details>
+<summary>Result</summary>
+<img src="img/c767c4e.png" alt="">
+</details>
+
+Время 1:45
+
+
+----------------------------------------------------------------
+
+
+Было бы вообще круто добавить поле со списком водителей, в котором можно назначать/удалять для данной машины.
+
+
 
 
 
