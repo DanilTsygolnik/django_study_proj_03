@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'vehicle_fleet.apps.VehicleFleetConfig',
 ]
 
+AUTH_USER_MODEL = 'vehicle_fleet.Manager'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
