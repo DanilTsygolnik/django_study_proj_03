@@ -14,7 +14,6 @@ class ManagerAdmin(UserAdmin):
         'first_name',
         'last_name',
         'is_staff',
-        'managed_enterprises',
     )
 
 
