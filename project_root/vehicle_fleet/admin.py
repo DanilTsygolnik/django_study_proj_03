@@ -7,7 +7,15 @@ from .forms import VehicleAdminForm
 
 class ManagerAdmin(UserAdmin):
     model = Manager
-    list_display = [field.name for field in Manager._meta.get_fields()]
+    list_display = (
+        'id',
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'is_staff',
+        'managed_enterprises',
+    )
 
 
 class DriverAdmin(admin.ModelAdmin):
